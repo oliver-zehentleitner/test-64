@@ -61,6 +61,16 @@ js/main.js      Zustand und Verdrahtung — kein HTML, kein fetch
 Keine Abhängigkeiten, kein Bundler, kein CDN: native ES-Module, so wie sie
 hier liegen.
 
+## Veröffentlichung
+
+Die Seite liegt auf GitHub Pages. `.github/workflows/pages.yml` lädt bei
+jedem Push auf `main` den Stand hoch und schaltet ihn live — gebaut wird
+nichts, die Dateien gehen so raus, wie sie hier liegen. Unter
+*Settings → Pages* muss als Quelle „GitHub Actions" eingestellt sein.
+
+Ein Lauf lässt sich auch ohne neuen Commit anstoßen: *Actions → Pages →
+Run workflow*.
+
 ## Herkunft
 
 Entwickelt im Rahmen der 64keys REST API. Der Quellstand liegt im Projekt

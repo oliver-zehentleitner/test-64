@@ -1,0 +1,52 @@
+# Veröffentlicht die Testoberfläche auf GitHub Pages.
+#
+# Es gibt nichts zu bauen: Die Seite besteht aus HTML, CSS und nativen
+# ES-Modulen, die so ausgeliefert werden, wie sie im Repository liegen.
+# Der Lauf lädt also nur den Stand hoch und schaltet ihn live.
+#
+# Voraussetzung: Unter Settings → Pages muss als Quelle „GitHub Actions"
+# eingestellt sein.
+
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  # Zum Wiederveröffentlichen ohne neuen Commit
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Ein Deployment zur Zeit; laufende nicht abbrechen, damit eine
+# Veröffentlichung nicht halb fertig stehen bleibt.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Stand holen
+        uses: actions/checkout@v4
+
+      - name: Pages vorbereiten
+        uses: actions/configure-pages@v5
+
+      - name: Dateien hochladen
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Das ganze Repository; .git und .github lässt die Action weg
+          path: .
+
+      - name: Veröffentlichen
+        id: deployment
+        uses: actions/deploy-pages@v4
