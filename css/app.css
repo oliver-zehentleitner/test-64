@@ -22,15 +22,27 @@ body {
 }
 
 /* Kopfzeile ------------------------------------------------------------- */
-header { background: var(--panel); border-bottom: 1px solid var(--line); padding: 14px 20px; }
-h1 { margin: 0 0 10px; font-size: 18px; }
-h1 small { font-weight: 400; color: var(--muted); font-size: 13px; margin-left: 8px; }
+/* Eine Zeile statt drei: der Platz gehoert den Charts, nicht der Verwaltung. */
+header { background: var(--panel); border-bottom: 1px solid var(--line); padding: 8px 14px; }
 .bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 /* Ohne min-width schrumpfen Eingabefelder in einer Zeile nicht und schieben
    die Schaltflaechen auf schmalen Bildschirmen aus der Karte. */
 .bar > input, .bar > select { min-width: 0; }
-header .bar #base { flex: 2 1 260px; }
-header .bar #token { flex: 3 1 240px; }
+
+.kopf { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.kopf > input, .kopf > select { min-width: 0; }
+.kopf .marke { font-weight: 600; white-space: nowrap; }
+.kopf .tabs { margin: 0; }
+.kopf #base { flex: 2 1 180px; }
+.kopf #token { flex: 2 1 170px; }
+.kopf input, .kopf select, .kopf button { padding: 5px 8px; }
+
+/* Der Status darf wachsen, aber nie umbrechen - sonst waere die Zeile
+   wieder zwei. Der ganze Text steht im title-Attribut. */
+.kopf .status {
+  flex: 1 1 140px; min-width: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
 
 /* Bedienelemente -------------------------------------------------------- */
 input, select, button, textarea {
@@ -55,7 +67,7 @@ button:disabled { opacity: .5; cursor: default; }
 /* minmax(0, …) statt fester Breiten: sonst waechst eine Spalte mit ihrem
    breitesten Inhalt (ein langer Mengenname im Auswahlfeld genuegt) und
    schiebt sich ueber die andere. */
-main { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 16px; padding: 16px; align-items: start; }
+main { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 14px; padding: 12px 14px; align-items: start; }
 @media (max-width: 860px) { main { grid-template-columns: 1fr; } }
 
 section.panel {
@@ -182,7 +194,7 @@ svg { max-width: 100%; height: auto; }
 [hidden] { display: none !important; }
 
 /* Endpunkt-Browser ------------------------------------------------------- */
-#viewExplorer { padding: 16px; }
+#viewExplorer { padding: 12px 14px; }
 .explorer { display: grid; grid-template-columns: 320px 1fr; gap: 16px; align-items: start; }
 @media (max-width: 900px) { .explorer { grid-template-columns: 1fr; } }
 

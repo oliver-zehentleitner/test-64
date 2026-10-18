@@ -20,9 +20,13 @@ export function fehlertext(error) {
   return error instanceof ApiError ? error.readable : String(error?.message || error);
 }
 
-/** Statuszeile oben rechts. */
+/**
+ * Statuszeile oben rechts. Sie steht in der einzeiligen Kopfzeile und wird
+ * dort abgeschnitten - der ganze Text haengt deshalb als Tooltip daran.
+ */
 export function setStatus(el, text, kind = "") {
   el.textContent = text;
+  el.title = text;
   el.className = "status " + kind;
 }
 

@@ -10,24 +10,30 @@
 <body>
 
 <header>
-  <h1>64keys API <small>Testoberfläche – greift ausschließlich über <code>/api/v1</code> zu</small></h1>
-  <div class="bar">
+  <!-- Eine Zeile: Marke, Ansicht, Verbindung, Status. Alles, was selten
+       gebraucht wird, steckt im title-Attribut statt in einer eigenen Zeile. -->
+  <div class="kopf">
+    <span class="marke" title="Testoberfläche – greift ausschließlich über /api/v1 zu">64keys API</span>
+
+    <nav class="tabs">
+      <button id="modeCharts" aria-selected="true">Charts</button>
+      <button id="modeExplorer" aria-selected="false">Endpunkte</button>
+    </nav>
+
     <input id="base" placeholder="https://… /api/v1" aria-label="Adresse der API">
     <input id="token" type="password" placeholder="Zugriffstoken" aria-label="Zugriffstoken">
+
     <select id="lang" title="Sprache der Texte" aria-label="Sprache">
       <option value="de">Deutsch</option>
       <option value="en">English</option>
       <option value="es">Español</option>
     </select>
+
     <button id="connect">Verbinden</button>
-    <button id="forget" class="ghost" title="Token aus diesem Browser entfernen">Token vergessen</button>
+    <button id="forget" class="ghost small" title="Token aus diesem Browser entfernen">Token vergessen</button>
+
     <span id="conn" class="status">nicht verbunden</span>
   </div>
-
-  <nav class="tabs" style="margin-top:10px">
-    <button id="modeCharts" aria-selected="true">Charts</button>
-    <button id="modeExplorer" aria-selected="false">Endpunkte</button>
-  </nav>
 </header>
 
 <main id="viewCharts">
