@@ -108,10 +108,25 @@
       </div>
 
       <div class="merkbereich">
-        <div id="merkliste" class="hint">Merkliste leer</div>
+        <h3>Merkliste <span id="merkAnzahl" class="hint">(leer)</span></h3>
+        <p class="hint">
+          Charts mit „+“ vormerken, dann rechnen: <strong>Interaktion</strong>
+          (genau zwei), <strong>Penta</strong> (drei bis fünf) oder
+          <strong>Organisation</strong> (ab drei). Das Ergebnis erscheint
+          rechts. Die Auswahl lässt sich außerdem als Menge speichern — die
+          kennt auch das Webinterface.
+        </p>
+        <div id="merkliste" class="merkchips"></div>
+
         <div class="bar">
-          <input id="merkName" placeholder="Name der Menge" style="flex:1">
-          <button id="merkSave" class="ghost small">als Menge speichern</button>
+          <button id="grInteraktion" title="genau zwei Charts">Interaktion</button>
+          <button id="grPenta" title="drei bis fünf Charts">Penta</button>
+          <button id="grOrganisation" title="ab drei Charts">Organisation</button>
+        </div>
+
+        <div class="bar">
+          <input id="merkName" placeholder="Name für eine Menge" style="flex:1 1 140px">
+          <button id="merkSave" class="ghost small">speichern</button>
           <button id="merkClear" class="ghost small">leeren</button>
         </div>
         <p id="merkMsg" class="hint"></p>

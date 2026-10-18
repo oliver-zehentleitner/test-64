@@ -88,7 +88,11 @@ section.panel h2 {
 
 #sets { flex: 1; width: 100%; }
 .merkbereich { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 10px; }
+.merkbereich h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 0 0 4px; }
+.merkbereich h3 .hint { text-transform: none; letter-spacing: 0; }
 .merkbereich .hint { margin: 0 0 6px; }
+.merkchips { margin-bottom: 8px; max-height: 120px; overflow: auto; }
+.merkchips .chip { padding-right: 4px; }
 
 /* Suchfilter: zugeklappt, damit die Liste nicht nach unten rutscht */
 details.filter { margin: 8px 0; }
@@ -155,11 +159,19 @@ table.planeten td { font-variant-numeric: tabular-nums; }
 /* Grafiken nebeneinander: jede so breit wie noetig, Umbruch bei Bedarf */
 .grafiktafel { display: flex; flex-wrap: wrap; gap: 16px; align-items: start; }
 .grafiktafel figure { margin: 0; width: 330px; max-width: 100%; }
-/* Mandala und Spider dreifach: in Kachelgroesse ist ihr Detail unlesbar.
-   Die Deckelung aus .bodygraph muss dafuer weg, sonst bleibt das SVG bei
-   seinen 420 Pixeln stehen. */
-.grafiktafel figure.gross { width: 990px; }
-.grafiktafel figure.gross .bodygraph { max-width: none; }
+/* Groessen je Grafik: Bodygraph und Transit als Kachel, Spider dreifach
+   (sein Netz ist sonst unlesbar), Mandala dazwischen. Die Deckelung aus
+   .bodygraph muss dafuer weg, sonst bleibt das SVG bei seinen 420 Pixeln. */
+.grafiktafel figure.g-mandala { width: 495px; }
+.grafiktafel figure.g-spider { width: 990px; }
+.grafiktafel figure.g-mandala .bodygraph,
+.grafiktafel figure.g-spider .bodygraph { max-width: none; }
+
+/* Das Mandala ist mit dunklen Linien auf hellem Grund gezeichnet - auf der
+   dunklen Oberflaeche verschwindet es sonst. */
+.grafiktafel figure.g-mandala .bodygraph {
+  background: #fff; border-radius: 8px; padding: 10px;
+}
 .grafiktafel figcaption { margin-bottom: 6px; }
 
 /* Grafik ---------------------------------------------------------------- */

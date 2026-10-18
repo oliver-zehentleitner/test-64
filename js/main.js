@@ -9,6 +9,7 @@
 import { Api } from "./api.js";
 import { Dict } from "./dict.js";
 import { Chartansicht } from "./chart.js";
+import { Gruppenansicht } from "./gruppen.js";
 import { Explorer } from "./explorer.js";
 import * as ui from "./ui.js";
 
@@ -22,10 +23,20 @@ const state = {
   chartId: null,
   seite: 1,
   auswahl: new Set(), // Merkliste fuer Interaktion, Penta, Organisationsmodell
+  namen: new Map(),   // id => Name, damit die Merkliste lesbar bleibt
 };
 
 /** Die beiden grossen Ansichten. */
 let explorer = null;
+
+/** Rechnet die Merkliste als Interaktion, Penta oder Organisationsmodell. */
+const gruppenansicht = new Gruppenansicht({
+  api,
+  dict,
+  wurzel: $("detail"),
+  auswahl: state.auswahl,
+  namen: state.namen,
+});
 
 const chartansicht = new Chartansicht({
   api,
@@ -35,6 +46,15 @@ const chartansicht = new Chartansicht({
   oeffnen: (id) => oeffneChart(id),
   nachLaden: () => ladeListe(),
 });
+
+/** Zeigt eine Gruppenauswertung im rechten Bereich. */
+async function zeigeGruppe(art) {
+  state.chartId = null;
+  await dict.laden();
+  await namenHolen([...state.auswahl]);
+  await gruppenansicht.zeige(art);
+  await ladeListe();
+}
 
 function moduswechsel(modus) {
   const aufEndpunkte = modus === "explorer";
@@ -143,6 +163,11 @@ async function ladeListe() {
     const res = await api.listCharts(filter());
     const charts = res.data || [];
 
+    for (const chart of charts) {
+      state.namen.set(chart.id,
+        `${chart.first_name || ""} ${chart.last_name || ""}`.trim() || `#${chart.id}`);
+    }
+
     ui.renderChartList($("charts"), charts, {
       aktiv: state.chartId,
       oeffnen: oeffneChart,
@@ -174,18 +199,59 @@ async function ladeListe() {
  * steht, rechnet der Reiter "Gruppen" als Interaktion, Penta oder
  * Organisationsmodell - und laesst sich als Menge speichern, die auch das
  * Webinterface kennt.
+ *
+ * Angezeigt werden Namen, nicht ids: eine Reihe blosser Zahlen sagt
+ * niemandem, wen er da ausgewaehlt hat.
  */
-function zeigeMerkliste() {
-  const anzahl = state.auswahl.size;
+async function zeigeMerkliste() {
+  const ids = [...state.auswahl];
 
-  $("merkliste").textContent = anzahl
-    ? `Merkliste: ${anzahl} ${anzahl === 1 ? "Chart" : "Charts"} (${[...state.auswahl].join(", ")}) ` +
-      `– im Reiter „Gruppen“ rechnen oder hier als Menge speichern`
-    : "Merkliste leer – Charts mit „+“ vormerken, dann im Reiter „Gruppen“ "
-      + "als Interaktion, Penta oder Organisationsmodell rechnen";
+  $("merkAnzahl").textContent = ids.length
+    ? `(${ids.length} ${ids.length === 1 ? "Chart" : "Charts"})`
+    : "(leer)";
 
-  $("merkSave").disabled = anzahl === 0;
-  $("merkClear").disabled = anzahl === 0;
+  $("merkSave").disabled = ids.length === 0;
+  $("merkClear").disabled = ids.length === 0;
+
+  // Jedes Modell hat seine Spanne; was nicht passt, bleibt gesperrt - das
+  // erspart die Fehlermeldung nach dem Klick.
+  $("grInteraktion").disabled = ids.length !== 2;
+  $("grPenta").disabled = ids.length < 3 || ids.length > 5;
+  $("grOrganisation").disabled = ids.length < 3;
+
+  if (!ids.length) {
+    $("merkliste").innerHTML = `<span class="hint">noch nichts vorgemerkt</span>`;
+    return;
+  }
+
+  await namenHolen(ids);
+
+  $("merkliste").innerHTML = ids.map((id) =>
+    `<span class="chip">${ui.esc(state.namen.get(id) || "#" + id)}` +
+    `<button class="linkknopf" data-merk-weg="${id}" title="entfernen">×</button></span>`).join("");
+
+  $("merkliste").querySelectorAll("[data-merk-weg]").forEach((knopf) => {
+    knopf.onclick = () => {
+      state.auswahl.delete(Number(knopf.dataset.merkWeg));
+      zeigeMerkliste();
+      ladeListe();
+    };
+  });
+}
+
+/** Namen zu ids, die noch keinen haben - in einem Abruf fuer alle. */
+async function namenHolen(ids) {
+  const fehlend = ids.filter((id) => !state.namen.has(id));
+  if (!fehlend.length) return;
+
+  try {
+    const res = await api.listCharts({ ids: fehlend.join(","), per_page: 100 });
+
+    for (const chart of res.data || []) {
+      state.namen.set(chart.id,
+        `${chart.first_name || ""} ${chart.last_name || ""}`.trim() || `#${chart.id}`);
+    }
+  } catch { /* dann eben die ids */ }
 }
 
 /** Die Merkliste als gespeicherte Menge ablegen. */
@@ -226,9 +292,23 @@ async function mengeUebernehmen() {
 
   try {
     const menge = await api.chartSet(id);
+
     state.auswahl.clear();
-    for (const chart of menge.charts || []) state.auswahl.add(chart.id);
-    zeigeMerkliste();
+    for (const chart of menge.charts || []) {
+      state.auswahl.add(chart.id);
+      state.namen.set(chart.id,
+        `${chart.first_name || ""} ${chart.last_name || ""}`.trim() || `#${chart.id}`);
+    }
+
+    // Eine Menge kann Charts enthalten, die dieses Konto nicht sehen darf -
+    // sonst wundert sich jemand, warum aus 19 Charts 13 werden.
+    const versteckt = menge.hidden_count || 0;
+    $("merkMsg").textContent = versteckt
+      ? `„${menge.name}“: ${menge.charts.length} von ${menge.chart_count} Charts übernommen, ` +
+        `${versteckt} sind für dieses Konto nicht sichtbar.`
+      : `„${menge.name}“: ${menge.charts.length} Charts übernommen.`;
+
+    await zeigeMerkliste();
     await ladeListe();
   } catch (error) {
     ui.setStatus($("conn"), ui.fehlertext(error), "err");
@@ -321,6 +401,9 @@ $("merkClear").onclick = () => {
   ladeListe();
 };
 $("merkSave").onclick = mengeSpeichern;
+$("grInteraktion").onclick = () => zeigeGruppe("interaktion");
+$("grPenta").onclick = () => zeigeGruppe("penta");
+$("grOrganisation").onclick = () => zeigeGruppe("organisation");
 
 $("fSearch").onkeydown = (ereignis) => {
   if (ereignis.key === "Enter") { ereignis.preventDefault(); state.seite = 1; ladeListe(); }

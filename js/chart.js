@@ -20,7 +20,6 @@ const REITER = {
   grafiken: "Grafiken",
   zeit: "Zeit",
   varianten: "Varianten",
-  gruppen: "Gruppen",
   verwaltung: "Verwaltung",
   json: "JSON",
 };
@@ -35,6 +34,12 @@ const KNOTEN = {
   design_north: "Design ☊", design_south: "Design ☋",
   personality_north: "Persönlichkeit ☊", personality_south: "Persönlichkeit ☋",
 };
+
+/**
+ * Gruppenmodelle (Interaktion, Penta, O16) stehen bewusst nicht hier,
+ * sondern bei der Merkliste links: sie rechnen mehrere Charts, nicht dieses
+ * eine. Siehe js/gruppen.js.
+ */
 
 /** Planeten in der Reihenfolge der Chartansicht. */
 const PLANETEN = ["su", "ea", "nn", "sn", "mo", "me", "ve", "ma", "ju", "sa", "ur", "ne", "pl", "ki", "li"];
@@ -94,7 +99,6 @@ export class Chartansicht {
       grafiken: () => this.#grafiken(),
       zeit: () => this.#zeit(),
       varianten: () => this.#varianten(),
-      gruppen: () => this.#gruppen(),
       verwaltung: () => this.#verwaltung(),
       json: () => { this.koerper.innerHTML = `<pre>${esc(JSON.stringify(this.roh, null, 2))}</pre>`; },
     })[this.reiter]();
@@ -349,13 +353,11 @@ export class Chartansicht {
 
       // Mandala und Spider zeigen viel Detail (Planetenstaende rundum, das
       // Netz mit seinen Achsen) - in Kachelgroesse ist davon nichts zu
-      // erkennen, deshalb bekommen sie das Dreifache.
-      const gross = ["mandala", "spider"];
-
+      // erkennen. Die genauen Groessen stehen im Stylesheet, je Grafik.
       this.koerper.innerHTML = `
         <div class="grafiktafel">
           ${alle.map((g) => `
-            <figure class="${gross.includes(g.graphic) ? "gross" : ""}">
+            <figure class="g-${esc(g.graphic)}">
               <figcaption><strong>${esc(g.graphic)}</strong><br>
                 <span class="hint">${esc(g.description || "")}${
                   g.allowed ? "" : " – Abo fehlt"}</span></figcaption>
@@ -582,139 +584,6 @@ export class Chartansicht {
   rohUnterschied(daten) {
     const schluessel = daten.items.map((v) => `${v.type}|${v.profile}`);
     return new Set(schluessel).size > 1;
-  }
-
-  // ---- Gruppen -----------------------------------------------------------
-
-  /** Interaktion, Penta und O16 aus der Merkliste der Chartliste. */
-  #gruppen() {
-    // Das geoeffnete Chart rechnet immer mit; steht es auch in der
-    // Merkliste, zaehlt es trotzdem nur einmal.
-    const beteiligt = [this.chart.id, ...[...this.auswahl].filter((id) => id !== this.chart.id)];
-
-    this.koerper.innerHTML = `
-      <p class="hint">Merkliste: in der Chartliste links auf „+“ klicken. Dieses Chart
-        (#${this.chart.id}) wird immer mitgerechnet.</p>
-      <div class="bar">
-        <span id="grIds">${esc(beteiligt.join(", "))} <span class="hint">(${beteiligt.length})</span></span>
-        <button id="grClear" class="ghost small">Merkliste leeren</button>
-      </div>
-      <div class="bar">
-        <button id="grInter">Interaktion (2)</button>
-        <button id="grPenta">Penta (3–5)</button>
-        <button id="grO16">Organisation (3+)</button>
-        <label class="inline"><input type="checkbox" id="grSvg" checked> mit Grafik</label>
-      </div>
-      <div id="grBody"></div>`;
-
-    const feld = () => this.koerper.querySelector("#grBody");
-    const alle = () => beteiligt;
-
-    this.koerper.querySelector("#grClear").onclick = () => {
-      this.auswahl.clear();
-      this.nachLaden?.();
-      this.render();
-    };
-
-    /**
-     * Rechnen, Ergebnis einsetzen, danach die Grafiken nachladen. Die
-     * Nacharbeit laeuft erst nach dem Einsetzen - vorher gibt es die
-     * Zielelemente noch nicht.
-     */
-    const laufen = async (arbeit) => {
-      feld().innerHTML = `<p class="hint">wird gerechnet …</p>`;
-      try {
-        const { html, danach } = await arbeit();
-        feld().innerHTML = html;
-        await danach?.();
-      } catch (error) {
-        feld().innerHTML = `<p class="err">${esc(fehlertext(error))}</p>`;
-      }
-    };
-
-    this.koerper.querySelector("#grInter").onclick = () => laufen(async () => {
-      const [a, b] = alle();
-      if (!b) return { html: `<p class="err">Für eine Interaktion wird ein zweites Chart gebraucht.</p>` };
-
-      const d = await this.api.interaction(a, b);
-      this.roh = { data: d };
-
-      const mitGrafik = this.koerper.querySelector("#grSvg").checked;
-      const grafik = mitGrafik ? `<div class="bodygraph" id="grSvgBox"></div>` : "";
-
-      return { danach: mitGrafik
-        ? () => this.#svgEinsetzen("grSvgBox", () => this.api.interactionSvg(a, b))
-        : null, html: `
-        <h3 class="sub">${esc(d.charts.map((c) => `${c.first_name} ${c.last_name}`).join(" + "))}</h3>
-        <table class="daten">
-          <tr><th>Komposit-Zentren</th><td>${d.composite.defined_centers} definiert, ${d.composite.open_centers} offen</td></tr>
-          <tr><th>Kanäle</th><td>${(d.composite.channels || []).map((k) => this.dict.kanal(k)).join(", ")}</td></tr>
-          <tr><th>Gefährtentore / -kanäle</th><td>${d.connection.companion_gates} / ${d.connection.companion_channels}</td></tr>
-          <tr><th>Ergänzungen</th><td>${d.connection.complements}</td></tr>
-          <tr><th>Dominanz</th><td>${d.connection.dominance.chart1} : ${d.connection.dominance.chart2}</td></tr>
-          <tr><th>Trigger Chart 1</th><td>+${d.triggers.chart1.supporting} / −${d.triggers.chart1.challenging}</td></tr>
-          <tr><th>Trigger Chart 2</th><td>+${d.triggers.chart2.supporting} / −${d.triggers.chart2.challenging}</td></tr>
-        </table>${grafik}` };
-    });
-
-    this.koerper.querySelector("#grPenta").onclick = () => laufen(async () => {
-      const liste = alle();
-      if (liste.length < 3) return { html: `<p class="err">Ein Penta braucht drei bis fünf Charts.</p>` };
-
-      const d = await this.api.penta(liste.slice(0, 5));
-      this.roh = { data: d };
-
-      const mitGrafik = this.koerper.querySelector("#grSvg").checked;
-      const grafik = mitGrafik ? `<div class="bodygraph" id="grSvgBox"></div>` : "";
-
-      return { danach: mitGrafik
-        ? () => this.#svgEinsetzen("grSvgBox", () => this.api.pentaSvg(liste.slice(0, 5)))
-        : null, html: `
-        <h3 class="sub">${esc(d.charts.map((c) => c.last_name).join(", "))}</h3>
-        <table class="daten">
-          <tr><th>Teamklima</th><td>${esc(d.team_climate.index ?? "–")} (+${d.team_climate.supporting} / −${d.team_climate.challenging})</td></tr>
-          <tr><th>Fehlende Pentatore</th><td>${d.penta_gates.missing_count}: ${(d.penta_gates.missing || []).join(", ")}</td></tr>
-          <tr><th>Powerbase</th><td>${esc(d.powerbase.strongest ?? "–")} · ${esc(this.#werteliste(d.powerbase.values))}</td></tr>
-          <tr><th>Linien</th><td>${esc(this.#werteliste(d.lines))}</td></tr>
-        </table>${grafik}` };
-    });
-
-    this.koerper.querySelector("#grO16").onclick = () => laufen(async () => {
-      const liste = alle();
-      if (liste.length < 3) return { html: `<p class="err">Das Organisationsmodell braucht mindestens drei Charts.</p>` };
-
-      const d = await this.api.organisation(liste);
-      this.roh = { data: d };
-
-      const arten = {
-        types: "Typenverteilung",
-        centers: "Zentren",
-        specials: "Besonderheiten",
-        powerbase: "Powerbase",
-      };
-
-      const mitGrafik = this.koerper.querySelector("#grSvg").checked;
-      const grafiken = mitGrafik
-        ? Object.entries(arten).map(([g, bezeichnung]) => `
-            <figure>
-              <figcaption><strong>${esc(bezeichnung)}</strong></figcaption>
-              <div class="bodygraph" id="o16-${g}"></div>
-            </figure>`).join("")
-        : "";
-
-      return { danach: mitGrafik
-        ? () => Promise.all(Object.keys(arten).map((g) =>
-            this.#svgEinsetzen(`o16-${g}`, () => this.api.organisationSvg(liste, g))))
-        : null, html: `
-        <h3 class="sub">${liste.length} Charts</h3>
-        <table class="daten">
-          <tr><th>Typen (Abweichung von der Norm)</th><td>${esc(this.#werteliste(d.types))}</td></tr>
-          <tr><th>Powerbase</th><td>${esc(d.powerbase.strongest ?? "–")} · ${esc(this.#werteliste(d.powerbase.values))}</td></tr>
-          <tr><th>Fehlende Tore</th><td>${(d.missing_gates || []).join(", ") || "–"}</td></tr>
-          <tr><th>Linien</th><td>Durchschnitt ${esc(this.#werteliste(d.lines.average))}</td></tr>
-        </table>
-        <div class="grafiktafel">${grafiken}</div>` };
-    });
   }
 
   // ---- Verwaltung --------------------------------------------------------
