@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>64keys API – Testoberfläche</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<header>
+  <h1>64keys API <small>Testoberfläche – greift ausschließlich über <code>/api/v1</code> zu</small></h1>
+  <div class="bar">
+    <input id="base" placeholder="https://… /api/v1" aria-label="Adresse der API">
+    <input id="token" type="password" placeholder="Zugriffstoken" aria-label="Zugriffstoken">
+    <select id="lang" title="Sprache der Texte" aria-label="Sprache">
+      <option value="de">Deutsch</option>
+      <option value="en">English</option>
+      <option value="es">Español</option>
+    </select>
+    <button id="connect">Verbinden</button>
+    <button id="forget" class="ghost" title="Token aus diesem Browser entfernen">Token vergessen</button>
+    <span id="conn" class="status">nicht verbunden</span>
+  </div>
+
+  <nav class="tabs" style="margin-top:10px">
+    <button id="modeCharts" aria-selected="true">Charts</button>
+    <button id="modeExplorer" aria-selected="false">Endpunkte</button>
+  </nav>
+</header>
+
+<main id="viewCharts">
+  <div class="spalte">
+
+    <section class="panel">
+      <h2>Suche</h2>
+
+      <div class="bar">
+        <input id="fSearch" placeholder="Name, Firma, Label oder id …" style="flex:1" aria-label="Suchbegriff">
+        <button id="suchen">Suchen</button>
+      </div>
+
+      <details class="filter">
+        <summary>Filter</summary>
+        <div class="grid2">
+          <div class="field">
+            <label for="fType">Typ</label>
+            <select id="fType">
+              <option value="">alle</option>
+              <option value="K">K – Koordinator</option>
+              <option value="U">U – Umsetzer</option>
+              <option value="S">S – Spezialist</option>
+              <option value="I">I – Initiator</option>
+              <option value="B">B – Beobachter</option>
+            </select>
+          </div>
+          <div class="field"><label for="fProfile">Profil</label><input id="fProfile" placeholder="3/5"></div>
+          <div class="field">
+            <label for="fAuthority">Autorität</label>
+            <select id="fAuthority">
+              <option value="">alle</option>
+              <option value="2">2</option><option value="3">3</option>
+              <option value="4">4</option><option value="5">5</option>
+              <option value="6">6</option><option value="10">10</option>
+              <option value="11">11</option>
+            </select>
+          </div>
+          <div class="field"><label for="fGate">Tor</label><input id="fGate" placeholder="37"></div>
+          <div class="field"><label for="fChannel">Kanal</label><input id="fChannel" placeholder="35"></div>
+          <div class="field"><label for="fLabel">Label</label><input id="fLabel"></div>
+          <div class="field"><label for="fOrg">Organisation</label><input id="fOrg"></div>
+          <div class="field">
+            <label for="fSort">Sortierung</label>
+            <select id="fSort">
+              <option value="id">id</option>
+              <option value="last_name">Nachname</option>
+              <option value="first_name">Vorname</option>
+              <option value="birthdate">Geburtsdatum</option>
+              <option value="updated">zuletzt geändert</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="fDir">Richtung</label>
+            <select id="fDir"><option value="desc">absteigend</option><option value="asc">aufsteigend</option></select>
+          </div>
+        </div>
+        <div class="bar">
+          <label class="inline"><input type="checkbox" id="fTrashed"> Papierkorb</label>
+          <label class="inline"><input type="checkbox" id="fShared"> geteilte</label>
+          <label class="inline"><input type="checkbox" id="fExample"> Beispiele</label>
+          <button id="zuruecksetzen" class="ghost small">zurücksetzen</button>
+        </div>
+      </details>
+
+      <ul id="charts" class="list"></ul>
+      <p id="chartsEmpty" class="hint" hidden>Keine Charts gefunden.</p>
+
+      <div class="bar">
+        <button id="prev" class="ghost small">◀</button>
+        <button id="next" class="ghost small">▶</button>
+        <span id="chartsMeta" class="hint"></span>
+      </div>
+
+      <div class="bar">
+        <button id="meChart" class="ghost small">mein Chart</button>
+        <select id="sets" aria-label="gespeicherte Mengen"></select>
+      </div>
+
+      <div class="merkbereich">
+        <div id="merkliste" class="hint">Merkliste leer</div>
+        <div class="bar">
+          <input id="merkName" placeholder="Name der Menge" style="flex:1">
+          <button id="merkSave" class="ghost small">als Menge speichern</button>
+          <button id="merkClear" class="ghost small">leeren</button>
+        </div>
+        <p id="merkMsg" class="hint"></p>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Neues Chart</h2>
+      <form id="newChart">
+        <div class="grid2">
+          <div class="field"><label for="first_name">Vorname</label><input id="first_name" required></div>
+          <div class="field"><label for="last_name">Nachname</label><input id="last_name" required></div>
+          <div class="field"><label for="birthdate">Geburtsdatum</label><input id="birthdate" type="date" required></div>
+          <div class="field"><label for="birthtime">Uhrzeit</label><input id="birthtime" type="time" required></div>
+        </div>
+
+        <div class="field">
+          <label for="place">Geburtsort</label>
+          <select id="place">
+            <option value="tz">Zeitzone direkt angeben</option>
+            <option value="coords">Koordinaten (Zeitzone über Google)</option>
+          </select>
+        </div>
+
+        <div id="tzFields" class="grid2">
+          <div class="field">
+            <label for="timezone_offset">Zeitzone (Stunden)</label>
+            <input id="timezone_offset" type="number" step="0.25" value="1">
+          </div>
+          <div class="field">
+            <label for="dst_offset">Sommerzeit</label>
+            <input id="dst_offset" type="number" step="0.5" value="0">
+          </div>
+        </div>
+
+        <div id="coordFields" class="grid2" hidden>
+          <div class="field">
+            <label for="latitude">Breitengrad</label>
+            <input id="latitude" type="number" step="0.000001" placeholder="48.2082">
+          </div>
+          <div class="field">
+            <label for="longitude">Längengrad</label>
+            <input id="longitude" type="number" step="0.000001" placeholder="16.3738">
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div class="field"><label for="city">Ort (optional)</label><input id="city"></div>
+          <div class="field">
+            <label for="time_accuracy">Zeitgenauigkeit</label>
+            <select id="time_accuracy">
+              <option value="0">exakt</option>
+              <option value="1">± 5 min</option>
+              <option value="2">± 20 min</option>
+              <option value="3" selected>± 1 h</option>
+              <option value="4">± 2 h</option>
+              <option value="5">± 4 h</option>
+              <option value="6">± 12 h</option>
+            </select>
+          </div>
+        </div>
+
+        <label class="inline"><input type="checkbox" id="nurRechnen"> nur rechnen, nicht speichern</label>
+        <button id="createBtn">Chart anlegen</button>
+        <div id="createMsg" class="err" style="margin-top:8px"></div>
+      </form>
+    </section>
+  </div>
+
+  <section class="panel" id="detail">
+    <p class="hint">Links ein Chart auswählen oder ein neues anlegen.</p>
+  </section>
+</main>
+
+<section id="viewExplorer" hidden></section>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

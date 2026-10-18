@@ -1,0 +1,214 @@
+/* Testoberflaeche fuer die 64keys REST API.
+   Helle und dunkle Darstellung ueber die Einstellung des Systems. */
+
+:root {
+  --bg: #f6f7f9; --panel: #fff; --ink: #16202c; --muted: #5d6b7a;
+  --line: #dde3ea; --accent: #0b3d6b; --accent-ink: #fff;
+  --ok: #1d7a44; --err: #b3261e; --code-bg: #f0f2f5;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #11161c; --panel: #171e26; --ink: #e8edf2; --muted: #9aa8b6;
+    --line: #27323e; --accent: #4a9ede; --accent-ink: #0b1218;
+    --ok: #4ec27e; --err: #ff7b72; --code-bg: #0e141a;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Kopfzeile ------------------------------------------------------------- */
+header { background: var(--panel); border-bottom: 1px solid var(--line); padding: 14px 20px; }
+h1 { margin: 0 0 10px; font-size: 18px; }
+h1 small { font-weight: 400; color: var(--muted); font-size: 13px; margin-left: 8px; }
+.bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+/* Ohne min-width schrumpfen Eingabefelder in einer Zeile nicht und schieben
+   die Schaltflaechen auf schmalen Bildschirmen aus der Karte. */
+.bar > input, .bar > select { min-width: 0; }
+header .bar #base { flex: 2 1 260px; }
+header .bar #token { flex: 3 1 240px; }
+
+/* Bedienelemente -------------------------------------------------------- */
+input, select, button, textarea {
+  font: inherit; color: var(--ink); background: var(--panel);
+  border: 1px solid var(--line); border-radius: 6px; padding: 7px 9px;
+  max-width: 100%;
+}
+/* In Formularen und Rastern fuellen Felder ihre Spalte; ohne das behalten
+   sie ihre Standardbreite und ragen aus der Karte heraus. */
+form input, form select, .field input, .field select { width: 100%; }
+.grid2 > * { min-width: 0; }
+input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+button { background: var(--accent); color: var(--accent-ink); border-color: transparent; cursor: pointer; }
+button.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+button:disabled { opacity: .5; cursor: default; }
+
+.status { font-size: 13px; color: var(--muted); }
+.status.ok { color: var(--ok); }
+.status.err { color: var(--err); }
+
+/* Aufteilung ------------------------------------------------------------ */
+/* minmax(0, …) statt fester Breiten: sonst waechst eine Spalte mit ihrem
+   breitesten Inhalt (ein langer Mengenname im Auswahlfeld genuegt) und
+   schiebt sich ueber die andere. */
+main { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 16px; padding: 16px; align-items: start; }
+@media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+
+section.panel {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 10px; padding: 14px; min-width: 0;
+}
+section.panel h2 {
+  margin: 0 0 10px; font-size: 14px; text-transform: uppercase;
+  letter-spacing: .04em; color: var(--muted);
+}
+
+/* Chartliste ------------------------------------------------------------ */
+.list { list-style: none; margin: 0; padding: 0; max-height: 44vh; overflow: auto; }
+.list li { border-bottom: 1px solid var(--line); display: flex; align-items: stretch; }
+.list li.aktiv { background: var(--code-bg); }
+.list .chartknopf {
+  flex: 1; text-align: left; background: transparent; color: var(--ink);
+  border: 0; border-radius: 0; padding: 9px 6px; min-width: 0;
+}
+.list .chartknopf:hover { background: var(--code-bg); }
+.list .merkknopf {
+  width: 34px; background: transparent; color: var(--muted);
+  border: 0; border-left: 1px solid var(--line); border-radius: 0;
+}
+.list .merkknopf.an { background: var(--accent); color: var(--accent-ink); }
+.list .meta { color: var(--muted); font-size: 13px; }
+.list .chartknopf strong, .list .meta {
+  display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+#sets { flex: 1; width: 100%; }
+.merkbereich { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 10px; }
+.merkbereich .hint { margin: 0 0 6px; }
+
+/* Suchfilter: zugeklappt, damit die Liste nicht nach unten rutscht */
+details.filter { margin: 8px 0; }
+details.filter summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+details.filter[open] { border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+
+.spalte { display: grid; gap: 16px; align-content: start; min-width: 0; }
+label.inline {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin: 0; color: var(--ink); font-size: 13px;
+}
+label.inline input { width: auto; }
+button.small { font-size: 13px; padding: 4px 8px; }
+button.linkknopf {
+  background: transparent; border: 0; color: var(--muted);
+  padding: 0 2px; cursor: pointer;
+}
+
+/* Detailansicht --------------------------------------------------------- */
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.tabs button { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+.tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+
+table { border-collapse: collapse; width: 100%; }
+td, th { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: 500; width: 40%; }
+h3.sub { font-size: 15px; margin: 16px 0 6px; }
+
+pre { background: var(--code-bg); padding: 12px; border-radius: 8px; overflow: auto; max-height: 70vh; font-size: 13px; }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 3px; }
+.field { margin-bottom: 9px; }
+.err { color: var(--err); font-size: 13px; }
+.hint { color: var(--muted); font-size: 13px; }
+.chip {
+  display: inline-block; background: var(--code-bg); border-radius: 20px;
+  padding: 2px 10px; font-size: 13px; margin: 0 4px 4px 0;
+}
+
+/* Erklaertexte ---------------------------------------------------------- */
+.sec h3 { font-size: 16px; margin: 16px 0 4px; }
+.sec h4 { font-size: 14px; margin: 12px 0 2px; color: var(--muted); }
+.sec p { margin: 4px 0; }
+
+/* Chartansicht ----------------------------------------------------------- */
+.chartkopf { margin-bottom: 10px; }
+.chartkopf h2 { margin: 0; font-size: 18px; text-transform: none; letter-spacing: 0; color: var(--ink); }
+.chartkopf .kopfzeile { color: var(--muted); font-size: 13px; }
+
+/* Links der Bodygraph, rechts die Werte - wie in der Chartansicht */
+.chartgrid { display: grid; grid-template-columns: minmax(240px, 380px) 1fr; gap: 18px; align-items: start; }
+@media (max-width: 1100px) { .chartgrid { grid-template-columns: 1fr; } }
+
+table.daten th { width: 34%; }
+table.planeten th { width: auto; }
+table.planeten td { font-variant-numeric: tabular-nums; }
+
+/* Zeitvarianten: neun Bodygraphs nebeneinander */
+.varianten { display: flex; flex-wrap: wrap; gap: 12px; }
+.varianten figure { margin: 0; width: 210px; }
+.varianten figcaption { font-size: 12px; color: var(--muted); line-height: 1.35; }
+
+/* Grafiken nebeneinander: jede so breit wie noetig, Umbruch bei Bedarf */
+.grafiktafel { display: flex; flex-wrap: wrap; gap: 16px; align-items: start; }
+.grafiktafel figure { margin: 0; width: 330px; max-width: 100%; }
+/* Mandala und Spider dreifach: in Kachelgroesse ist ihr Detail unlesbar.
+   Die Deckelung aus .bodygraph muss dafuer weg, sonst bleibt das SVG bei
+   seinen 420 Pixeln stehen. */
+.grafiktafel figure.gross { width: 990px; }
+.grafiktafel figure.gross .bodygraph { max-width: none; }
+.grafiktafel figcaption { margin-bottom: 6px; }
+
+/* Grafik ---------------------------------------------------------------- */
+.bodygraph { max-width: 420px; }
+.bodygraph.klein { max-width: 210px; }
+svg { max-width: 100%; height: auto; }
+
+[hidden] { display: none !important; }
+
+/* Endpunkt-Browser ------------------------------------------------------- */
+#viewExplorer { padding: 16px; }
+.explorer { display: grid; grid-template-columns: 320px 1fr; gap: 16px; align-items: start; }
+@media (max-width: 900px) { .explorer { grid-template-columns: 1fr; } }
+
+.explorer-liste, .explorer-inhalt {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 10px; padding: 14px;
+}
+.explorer-liste { max-height: 78vh; overflow: auto; }
+.explorer-liste input { width: 100%; margin-bottom: 10px; }
+.op-gruppe h3 {
+  font-size: 13px; text-transform: uppercase; letter-spacing: .04em;
+  color: var(--muted); margin: 14px 0 4px;
+}
+button.op {
+  display: grid; grid-template-columns: 58px 1fr; gap: 6px; width: 100%;
+  text-align: left; background: transparent; color: var(--ink);
+  border: 0; border-bottom: 1px solid var(--line); border-radius: 0;
+  padding: 7px 4px;
+}
+button.op:hover { background: var(--code-bg); }
+.op-pfad { font-family: ui-monospace, monospace; font-size: 13px; }
+.op-titel { grid-column: 2; color: var(--muted); font-size: 12px; }
+
+.verb {
+  display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .04em;
+  border-radius: 4px; padding: 2px 5px; text-align: center; color: #fff;
+}
+.verb-get { background: #2a6f97; }
+.verb-post { background: #1d7a44; }
+.verb-patch { background: #9a6700; }
+.verb-delete { background: #b3261e; }
+
+.explorer-inhalt h2 { font-size: 16px; margin: 0 0 6px; }
+.explorer-inhalt h2 code { font-family: ui-monospace, monospace; }
+.explorer-inhalt .beschreibung { white-space: pre-wrap; margin: 8px 0; }
+fieldset {
+  border: 1px solid var(--line); border-radius: 8px;
+  padding: 10px 12px; margin: 12px 0;
+}
+legend { color: var(--muted); font-size: 13px; padding: 0 4px; }
+textarea { width: 100%; font-family: ui-monospace, monospace; font-size: 13px; }
