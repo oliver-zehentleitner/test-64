@@ -1,13 +1,15 @@
 # 64keys API – Testoberfläche
 
+### ▶ [oliver-zehentleitner.github.io/test-64](https://oliver-zehentleitner.github.io/test-64/)
+
 Eine schlanke Oberfläche zum Ausprobieren der 64keys REST API. Sie spricht
 ausschließlich über `/api/v1` mit dem Backend, hält keine eigenen Daten und
 braucht keinen Build-Schritt.
 
-**Veröffentlicht über GitHub Pages** – die Seite läuft im Browser, die
-Adresse des Backends und das Zugriffstoken trägt jede testende Person selbst
-ein. Beides bleibt im eigenen Browser (`localStorage`); es wird nichts an
-Dritte gesendet.
+Die Seite läuft im Browser; Adresse des Backends und Zugriffstoken trägt
+jede testende Person selbst ein. Beides bleibt im eigenen Browser
+(`localStorage`), es wird nichts an Dritte gesendet. Gehostet wird sie über
+GitHub Pages – ohne Server, ohne Datenhaltung.
 
 ## Zwei Betriebsarten
 
