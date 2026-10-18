@@ -73,7 +73,7 @@ const DEFAULT_BASE_URL = "http://127.0.0.1:8000/api/v1";
 export class Api {
   /**
    * @param {object} options
-   * @param {string} options.baseUrl  z.B. https://64keys.team/api/v1
+   * @param {string} options.baseUrl  z.B. https://<host>/api/v1
    * @param {string} options.token    persoenliches Zugriffstoken
    * @param {string} options.lang     de | en | es
    */
