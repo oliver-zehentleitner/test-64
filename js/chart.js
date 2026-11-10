@@ -383,7 +383,16 @@ export class Chartansicht {
 
     this.koerper.innerHTML = `
       <div class="bar">
-        <label class="inline">Zeitpunkt <input type="date" id="ztDatum" value="${heute}"></label>
+        <label class="inline">Zeitpunkt
+          <input type="date" id="ztDatum" value="${heute}">
+          <input type="time" id="ztZeit" value="12:00" step="60" title="Uhrzeit, minutengenau">
+        </label>
+        <label class="inline" title="Welche Zeitzone die eingegebene Uhrzeit meint">
+          <select id="ztZone">
+            <option value="local">lokale Zeit</option>
+            <option value="utc">UTC</option>
+          </select>
+        </label>
         <button id="ztNow">Transit</button>
         <button id="ztDays">12 Tage</button>
         <button id="ztLine">Zeitstrahl</button>
@@ -393,9 +402,33 @@ export class Chartansicht {
       </div>
       <div id="ztBody"><p class="hint">Eine Auswertung wählen.</p></div>`;
 
+    /**
+     * Der gewaehlte Zeitpunkt als ISO 8601 mit Offset.
+     *
+     * Die API rechnet minutengenau; die Oberflaeche hat lange nur ein Datum
+     * geschickt und 12:00 angenommen - deshalb sah es aus, als koenne die
+     * API keine Uhrzeit. Jetzt Datum, Uhrzeit und die Frage, in welcher
+     * Zeitzone sie gemeint ist: lokale Zeit des Browsers oder UTC.
+     */
     const datum = () => {
-      const wert = this.koerper.querySelector("#ztDatum").value;
-      return wert ? `${wert}T12:00:00Z` : "";
+      const tag = this.koerper.querySelector("#ztDatum").value;
+      if (!tag) return "";
+
+      const zeit = this.koerper.querySelector("#ztZeit").value || "00:00";
+
+      if (this.koerper.querySelector("#ztZone").value === "utc") {
+        return `${tag}T${zeit}:00Z`;
+      }
+
+      // Lokale Eingabe: den Versatz des Browsers anhaengen, damit der
+      // Zeitpunkt eindeutig ist und nicht stillschweigend verschoben wird.
+      const lokal = new Date(`${tag}T${zeit}:00`);
+      const versatz = -lokal.getTimezoneOffset();
+      const vorzeichen = versatz >= 0 ? "+" : "-";
+      const stunden = String(Math.floor(Math.abs(versatz) / 60)).padStart(2, "0");
+      const minuten = String(Math.abs(versatz) % 60).padStart(2, "0");
+
+      return `${tag}T${zeit}:00${vorzeichen}${stunden}:${minuten}`;
     };
 
     const feld = () => this.koerper.querySelector("#ztBody");
